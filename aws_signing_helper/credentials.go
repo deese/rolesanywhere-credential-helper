@@ -58,6 +58,15 @@ func createCredHelperUserAgentMiddleware(userAgent string) middleware.BuildMiddl
 
 // Function to create session and generate credentials
 func GenerateCredentials(opts *CredentialsOpts, signer Signer, signatureAlgorithm string) (CredentialProcessOutput, error) {
+    // Copy RA_HTTPS_PROXY to standard proxy environment variables if set
+    if raProxy := os.Getenv("RA_HTTPS_PROXY"); raProxy != "" {
+               if Debug {
+                       log.Printf("Found RA_HTTPS_PROXY=%s, copying to HTTP_PROXY and HTTPS_PROXY\n", raProxy)
+               }
+               os.Setenv("HTTP_PROXY", raProxy)
+               os.Setenv("HTTPS_PROXY", raProxy)
+    }
+
 	// Assign values to region and endpoint if they haven't already been assigned
 	trustAnchorArn, err := arn.Parse(opts.TrustAnchorArnStr)
 	if err != nil {
